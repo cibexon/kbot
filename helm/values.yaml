@@ -1,0 +1,29 @@
+replicaCount: 1
+
+image:
+  repository: cibexon
+  pullPolicy: IfNotPresent
+  tag: "v1.0.5"
+  arch: amd64
+
+secret:
+  name: kbot
+  tokenKey: token
+  tokenName: TELE_TOKEN
+
+service:
+  port: 80
+
+# Секції для лінтера
+autoscaling:
+  enabled: false
+serviceAccount:
+  create: true
+podAnnotations: {}
+podLabels: {}
+podSecurityContext: {}
+securityContext: {}
+resources: {}
+nodeSelector: {}
+tolerations: []
+affinity: {}
