@@ -1,9 +1,10 @@
 replicaCount: 1
 
 image:
-  repository: cibexon
+  registry: "ghcr.io"
+  repository: "cibexon/kbot"
   pullPolicy: IfNotPresent
-  tag: "v1.0.5"
+  tag: "v1.0.6"
   arch: amd64
 
 secret:
