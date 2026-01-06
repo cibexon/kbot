@@ -1,20 +1,16 @@
 replicaCount: 1
-
 image:
   registry: "ghcr.io"
   repository: "cibexon/kbot"
   pullPolicy: IfNotPresent
-  tag: "v1.0.6"
+  tag: "v1.0.5-755a651"
   arch: amd64
-
 secret:
   name: kbot
   tokenKey: token
   tokenName: TELE_TOKEN
-
 service:
   port: 80
-
 # Секції для лінтера
 autoscaling:
   enabled: false
