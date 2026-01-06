@@ -3,11 +3,7 @@ image:
   registry: "ghcr.io"
   repository: "cibexon/kbot"
   pullPolicy: IfNotPresent
-<<<<<<< HEAD
   tag: "v1.0.5-8e0b1c6"
-=======
-  tag: "v1.0.0-106879e"
->>>>>>> 19d0c63 (added yaml configurations)
   arch: amd64
 secret:
   name: kbot
