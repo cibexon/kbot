@@ -1,5 +1,6 @@
 # Application name and registry configuration
 APP := $(shell basename $(shell git remote get-url origin))
+OWNER ?= $(shell git remote get-url origin | cut -d':' -f2 | cut -d'/' -f1 | tr '[:upper:]' '[:lower:]')
 #REGISTRY := cibexon
 REGISTRY ?= ghcr.io
 VERSION := $(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
@@ -20,8 +21,7 @@ TARGETARCH ?= $(HOSTARCH)
 CGO_ENABLED ?= 0
 
 # Docker image tag
-IMAGE_TAG := $(REGISTRY)/$(APP):$(VERSION)-$(TARGETARCH)
-
+IMAGE_TAG := $(REGISTRY)/$(OWNER)/$(APP):$(VERSION)-$(TARGETARCH)
 # Validate environment variables
 ifeq ($(TARGETOS),)
 $(error TARGETOS is not set)

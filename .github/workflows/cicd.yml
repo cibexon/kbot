@@ -60,7 +60,8 @@ jobs:
           make image push \
             TARGETARCH=${{ env.TARGETARCH }} \
             TARGETOS=${{ env.TARGETOS }} \
-            VERSION=${{ env.VERSION }}
+            VERSION=${{ env.VERSION }} \
+            OWNER=$(echo ${{ env.OWNER }} | tr '[:upper:]' '[:lower:]')
 
       - name: Update Helm chart
         uses: mikefarah/yq@master
