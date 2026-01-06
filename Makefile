@@ -21,7 +21,7 @@ TARGETARCH ?= $(HOSTARCH)
 CGO_ENABLED ?= 0
 
 # Docker image tag
-IMAGE_TAG := $(REGISTRY)/$(OWNER)/$(APP):$(VERSION)-$(TARGETARCH)
+IMAGE_TAG := $(REGISTRY)/$(OWNER)/$(APP):$(VERSION)-$(TARGETOS)-$(TARGETARCH)
 # Validate environment variables
 ifeq ($(TARGETOS),)
 $(error TARGETOS is not set)
