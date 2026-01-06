@@ -27,20 +27,25 @@ spec:
     }
 
     environment {
-        // Отримуємо версію з Git всередині контейнера
-        APP_VERSION = "" 
+        // Змінні будуть ініціалізовані в етапі Prepare
+        VERSION = ""
     }
 
     stages {
         stage('Prepare') {
             steps {
                 container('go-tools') {
-                    // Встановлюємо необхідні інструменти, яких немає в образі alpine
+                    // Вирішуємо проблему "dubious ownership" для Git
+                    sh "git config --global --add safe.directory ${WORKSPACE}"
+                    
+                    // Встановлюємо інструменти збірки
                     sh "apk add --no-cache make git"
+                    
                     script {
-                        env.APP_VERSION = sh(script: "git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.1'", returnStdout: true).trim()
-                        env.COMMIT_HASH = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
-                        env.VERSION = "${env.APP_VERSION}-${env.COMMIT_HASH}"
+                        def app_version = sh(script: "git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.1'", returnStdout: true).trim()
+                        def commit_hash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
+                        env.VERSION = "${app_version}-${commit_hash}"
+                        echo "Target Version: ${env.VERSION}"
                     }
                 }
             }
@@ -70,6 +75,7 @@ spec:
             steps {
                 container('go-tools') {
                     echo "Building kbot for ${params.OS}/${params.ARCH}..."
+                    // Передаємо параметри з Jenkins у Makefile
                     sh "make build TARGETOS=${params.OS} TARGETARCH=${params.ARCH} VERSION=${env.VERSION}"
                 }
             }
@@ -87,14 +93,16 @@ spec:
         always {
             container('go-tools') {
                 echo "Cleaning up..."
+                // Додаємо конфіг і сюди, щоб make clean не падав
+                sh "git config --global --add safe.directory ${WORKSPACE}"
                 sh "make clean || true"
             }
         }
         success {
-            echo "Build successful: ${env.VERSION}"
+            echo "Successfully built version ${env.VERSION}"
         }
         failure {
-            echo "Build failed. Check the logs."
+            echo "Build failed. Please check the logs above."
         }
     }
 }
