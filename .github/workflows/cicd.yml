@@ -28,8 +28,46 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Build and Push
+      - name: Build and push Docker image
         env:
           APP: "kbot"
           REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
-        run: make image push
+        run: |
+          make image push \
+            TARGETARCH=${{ env.TARGETARCH }} \
+            TARGETOS=${{ env.TARGETOS }} \
+            VERSION=${{ env.VERSION }}
+
+  cd:
+    name: CD
+    needs: ci
+    if: github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set version
+        run: |
+          VERSION=$(git describe --tags --abbrev=0)-$(git rev-parse --short HEAD)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          echo "Using version: $VERSION"
+
+      - name: Update Helm chart
+        uses: mikefarah/yq@master
+        with:
+          cmd: yq -i '.image.tag=strenv(VERSION) | .image.arch=strenv(TARGETARCH)' helm/values.yaml
+
+      - name: Commit Helm chart changes
+        run: |
+          git config user.name github-actions
+          git config user.email github-actions@github.com
+          git add helm/values.yaml
+          git commit -m "chore: update version to ${{ env.VERSION }}"
+          git push
+
+      - name: Cleanup
+        run: make clean TARGETARCH=${{ env.TARGETARCH }}
