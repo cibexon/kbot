@@ -27,7 +27,6 @@ spec:
     }
 
     environment {
-        // Змінні будуть ініціалізовані в етапі Prepare
         VERSION = ""
     }
 
@@ -35,17 +34,18 @@ spec:
         stage('Prepare') {
             steps {
                 container('go-tools') {
-                    // Вирішуємо проблему "dubious ownership" для Git
-                    sh "git config --global --add safe.directory ${WORKSPACE}"
-                    
-                    // Встановлюємо інструменти збірки
+                    // КРОК 1: Встановлюємо git, щоб команда git config стала доступною
+                    echo "Installing build tools..."
                     sh "apk add --no-cache make git"
+                    
+                    // КРОК 2: Налаштовуємо права доступу (тепер git встановлено!)
+                    sh "git config --global --add safe.directory ${WORKSPACE}"
                     
                     script {
                         def app_version = sh(script: "git describe --tags --abbrev=0 2>/dev/null || echo 'v0.0.1'", returnStdout: true).trim()
                         def commit_hash = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
                         env.VERSION = "${app_version}-${commit_hash}"
-                        echo "Target Version: ${env.VERSION}"
+                        echo "Target Version for build: ${env.VERSION}"
                     }
                 }
             }
@@ -75,7 +75,6 @@ spec:
             steps {
                 container('go-tools') {
                     echo "Building kbot for ${params.OS}/${params.ARCH}..."
-                    // Передаємо параметри з Jenkins у Makefile
                     sh "make build TARGETOS=${params.OS} TARGETARCH=${params.ARCH} VERSION=${env.VERSION}"
                 }
             }
@@ -84,6 +83,7 @@ spec:
         stage('Artifact') {
             steps {
                 echo "Archiving build artifact..."
+                // Зберігаємо файл, який створила команда make build
                 archiveArtifacts artifacts: 'kbot', fingerprint: true
             }
         }
@@ -93,16 +93,17 @@ spec:
         always {
             container('go-tools') {
                 echo "Cleaning up..."
-                // Додаємо конфіг і сюди, щоб make clean не падав
-                sh "git config --global --add safe.directory ${WORKSPACE}"
+                // Додаємо перевірку на випадок, якщо Prepare не встиг встановити git
+                sh "apk add --no-cache make git || true"
+                sh "git config --global --add safe.directory ${WORKSPACE} || true"
                 sh "make clean || true"
             }
         }
         success {
-            echo "Successfully built version ${env.VERSION}"
+            echo "Build finished successfully!"
         }
         failure {
-            echo "Build failed. Please check the logs above."
+            echo "Build failed. Check the stage logs."
         }
     }
 }
