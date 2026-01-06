@@ -56,12 +56,14 @@ jobs:
       - name: Build and push Docker image
         env:
           APP: "kbot"
+          OWNER: ${{ github.repository_owner }}
         run: |
+          LOW_OWNER=$(echo "${OWNER}" | tr '[:upper:]' '[:lower:]')
           make image push \
             TARGETARCH=${{ env.TARGETARCH }} \
             TARGETOS=${{ env.TARGETOS }} \
             VERSION=${{ env.VERSION }} \
-            OWNER=$(echo ${{ env.OWNER }} | tr '[:upper:]' '[:lower:]')
+            OWNER=${LOW_OWNER}
 
       - name: Update Helm chart
         uses: mikefarah/yq@master
