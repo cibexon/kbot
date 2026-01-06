@@ -3,8 +3,9 @@ image:
   registry: "ghcr.io"
   repository: "cibexon/kbot"
   pullPolicy: IfNotPresent
-  tag: "v1.0.5-abb2361"
+  tag: "v1.0.5-357aa2f"
   arch: amd64
+  os: linux
 secret:
   name: kbot
   tokenKey: token
