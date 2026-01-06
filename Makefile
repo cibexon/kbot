@@ -1,6 +1,7 @@
 # Application name and registry configuration
 APP := $(shell basename $(shell git remote get-url origin))
-REGISTRY := cibexon
+#REGISTRY := cibexon
+REGISTRY ?= ghcr.io
 VERSION := $(shell git describe --tags --abbrev=0)-$(shell git rev-parse --short HEAD)
 
 # Host platform detection

@@ -30,6 +30,9 @@ jobs:
     needs: ci
     if: github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write # Дозволяє пушити в GHCR
 
     steps:
       - name: Checkout
@@ -43,16 +46,16 @@ jobs:
           echo "VERSION=$VERSION" >> $GITHUB_ENV
           echo "Using version: $VERSION"
 
-      - name: Docker Hub login
+      - name: GitHub Container Registry login
         uses: docker/login-action@v2
         with:
-          username: ${{ secrets.DOCKERHUB_USERNAME }}
-          password: ${{ secrets.DOCKERHUB_TOKEN }}
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Build and push Docker image
         env:
           APP: "kbot"
-          REGISTRY: ${{ secrets.DOCKERHUB_USERNAME }}
         run: |
           make image push \
             TARGETARCH=${{ env.TARGETARCH }} \
